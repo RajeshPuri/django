@@ -1,0 +1,95 @@
+services:
+  api:
+    build:
+      context: src
+      dockerfile: docker/Dockerfile
+    command: uvicorn config.asgi:application --workers 1 --host 0.0.0.0 --port 8000 --reload --reload-include *.html
+    volumes:
+      - ./src/:/app
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+    environment:
+      - TZ=Asia/Kathmandu
+      - PYTHONUNBUFFERED=1
+      - DEBUG=1
+      - SERVER_TYPE=LOCAL
+      - DJANGO_SETTINGS_MODULE=config.settings_local
+    # networks:
+    #   - mynetwork
+    env_file:
+      - ./src/config/.env
+    container_name: chuloz_backend
+
+  worker:
+    build:
+      context: src
+      dockerfile: docker/Dockerfile
+    command: celery -A config worker -l info
+    volumes:
+      - ./src/:/app
+    depends_on:
+      - db
+      - cache
+    environment:
+      - TZ=Asia/Kathmandu
+      - PYTHONUNBUFFERED=1
+      - DEBUG=1
+      - SERVER_TYPE=LOCAL
+      - DJANGO_SETTINGS_MODULE=config.settings_local
+      - CELERY_BROKER_URL=redis://:chuloz@chuloz_cache:6379/0
+      - CELERY_RESULT_BACKEND=redis://:chuloz@chuloz_cache:6379/1
+    env_file:
+      - ./src/config/.env
+    container_name: chuloz_celery_worker
+
+  beat:
+    build:
+      context: src
+      dockerfile: docker/Dockerfile
+    command: celery -A config beat -l info
+    volumes:
+      - ./src/:/app
+    depends_on:
+      - db
+      - cache
+    environment:
+      - TZ=Asia/Kathmandu
+      - PYTHONUNBUFFERED=1
+      - DEBUG=1
+      - SERVER_TYPE=LOCAL
+      - DJANGO_SETTINGS_MODULE=config.settings_local
+      - CELERY_BROKER_URL=redis://:chuloz@chuloz_cache:6379/0
+      - CELERY_RESULT_BACKEND=redis://:chuloz@chuloz_cache:6379/1
+    env_file:
+      - ./src/config/.env
+    container_name: chuloz_celery_beat
+  db:
+    container_name: chuloz_db
+    # image: postgres:14-alpine
+    image: postgis/postgis:14-3.3
+
+    environment:
+      - POSTGRES_DB=chulozdb
+      - POSTGRES_USER=chulozadmin
+      - POSTGRES_PASSWORD=Admin@1234
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - 5433:5432
+        # left represents the host machine port, right is the container port
+
+  cache:
+    image: redis:7.0.4-alpine
+    ports:
+      - 6380:6379
+    expose:
+      - 6379
+    environment:
+      - REDIS_PASSWORD=chuloz
+    command: redis-server --requirepass chuloz
+    container_name: chuloz_cache
+
+volumes:
+  postgres_data:

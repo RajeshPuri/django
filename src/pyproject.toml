@@ -1,0 +1,40 @@
+[tool.poetry]
+name = "ch-backend"
+version = "0.1.0"
+description = "Backend for chuloz"
+authors = ["Razesh <razesh@example.com>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.10,<4.0"
+django = "^5.0"
+djangorestframework = "^3.15"
+django-allauth = "^0.63.3"
+django-cors-headers = "^4.3.1"
+python-dotenv = "^1.0.1"
+djangorestframework-simplejwt = "^5.3.1"
+psycopg2-binary = "^2.9.9"
+requests = "^2.32.3"
+cryptography = "^43.0.0"
+pillow = "^11.3.0"
+gunicorn = "^23.0.0"
+celery = "^5.4.0"
+redis = "^5.0.7"
+postgis = "^1.0.4"
+django-redis = "^6.0.0"
+isort = "^6.0.1"
+firebase-admin = "^7.1.0"
+fcm-django = "^2.3.1"
+channels = "^4.3.1"
+uvicorn = {extras = ["standard"], version = "^0.37.0"}
+channels-redis = "^4.3.0"
+uvicorn-worker = "^0.4.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.2"
+pytest-django = "^4.8.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
